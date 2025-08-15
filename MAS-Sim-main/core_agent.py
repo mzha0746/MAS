@@ -12,7 +12,258 @@ from typing import Literal, Dict, List, Optional, Any, Union
 from dataclasses import dataclass, field
 from enum import Enum
 from openai import OpenAI, AsyncOpenAI
+from typing import Dict, List, Set, Tuple, Any
+import networkx as nx
+import matplotlib.pyplot as plt
+from collections import defaultdict
 
+class NetworkValidator:
+    """MAS网络验证器"""
+    
+    def __init__(self):
+        self.agents = {}
+        self.expected_connections = {}
+        self.validation_report = {}
+    
+    def register_agent(self, agent):
+        """注册agent到验证器"""
+        self.agents[agent.agent_id] = agent
+        print(f"注册agent: {agent.agent_id} (类型: {agent.agent_type.value})")
+    
+    def validate_network(self) -> Dict[str, Any]:
+        """验证整个网络的完整性"""
+        report = {
+            'total_agents': len(self.agents),
+            'agent_details': {},
+            'connection_matrix': {},
+            'network_issues': [],
+            'connectivity_analysis': {}
+        }
+        
+        print(f"开始验证网络，共 {len(self.agents)} 个agents")
+        
+        # 验证每个agent
+        for agent_id, agent in self.agents.items():
+            agent_info = agent.verify_agent_integrity()
+            report['agent_details'][agent_id] = agent_info
+            print(f"Agent {agent_id}: {agent_info['neighbor_count']} 个邻居")
+        
+        # 构建连接矩阵
+        report['connection_matrix'] = self._build_connection_matrix()
+        
+        # 检查连接问题
+        report['network_issues'] = self._check_network_issues()
+        
+        # 连通性分析
+        report['connectivity_analysis'] = self._analyze_connectivity()
+        
+        self.validation_report = report
+        return report
+    
+    def _build_connection_matrix(self) -> Dict[str, Dict[str, bool]]:
+        """构建连接矩阵"""
+        matrix = defaultdict(lambda: defaultdict(bool))
+        
+        for agent_id, agent in self.agents.items():
+            for neighbor_id in agent.neighbors.keys():
+                matrix[agent_id][neighbor_id] = True
+        
+        return dict(matrix)
+    
+    def _check_network_issues(self) -> List[Dict[str, Any]]:
+        """检查网络问题"""
+        issues = []
+        
+        # 检查孤立节点
+        for agent_id, agent in self.agents.items():
+            if len(agent.neighbors) == 0:
+                issues.append({
+                    'type': 'isolated_agent',
+                    'agent_id': agent_id,
+                    'description': f'Agent {agent_id} 没有任何邻居连接'
+                })
+        
+        # 检查单向连接
+        for agent_id, agent in self.agents.items():
+            for neighbor_id in agent.neighbors.keys():
+                if neighbor_id in self.agents:
+                    neighbor = self.agents[neighbor_id]
+                    if agent_id not in neighbor.neighbors:
+                        issues.append({
+                            'type': 'unidirectional_connection',
+                            'from_agent': agent_id,
+                            'to_agent': neighbor_id,
+                            'description': f'从 {agent_id} 到 {neighbor_id} 的连接是单向的'
+                        })
+        
+        # 检查死链接
+        for agent_id, agent in self.agents.items():
+            for neighbor_id in agent.neighbors.keys():
+                if neighbor_id not in self.agents:
+                    issues.append({
+                        'type': 'dead_link',
+                        'agent_id': agent_id,
+                        'target_id': neighbor_id,
+                        'description': f'Agent {agent_id} 连接到不存在的agent {neighbor_id}'
+                    })
+        
+        return issues
+    
+    def _analyze_connectivity(self) -> Dict[str, Any]:
+        """分析网络连通性"""
+        # 创建networkx图
+        G = nx.Graph()
+        
+        # 添加节点
+        for agent_id in self.agents.keys():
+            G.add_node(agent_id)
+        
+        # 添加边
+        for agent_id, agent in self.agents.items():
+            for neighbor_id in agent.neighbors.keys():
+                if neighbor_id in self.agents:  # 只添加有效连接
+                    G.add_edge(agent_id, neighbor_id)
+        
+        analysis = {
+            'total_nodes': G.number_of_nodes(),
+            'total_edges': G.number_of_edges(),
+            'is_connected': nx.is_connected(G),
+            'connected_components': list(nx.connected_components(G)),
+            'number_of_components': nx.number_connected_components(G)
+        }
+        
+        if G.number_of_nodes() > 0:
+            analysis['average_clustering'] = nx.average_clustering(G)
+            analysis['diameter'] = nx.diameter(G) if nx.is_connected(G) else None
+        
+        return analysis
+    
+    def visualize_network(self, save_path: str = None, show_labels: bool = True):
+        """可视化网络"""
+        G = nx.Graph()
+        
+        # 添加节点和属性
+        for agent_id, agent in self.agents.items():
+            G.add_node(agent_id, 
+                      role=agent.role.value, 
+                      agent_type=agent.agent_type.value,
+                      is_active=agent.state.is_active)
+        
+        # 添加边
+        for agent_id, agent in self.agents.items():
+            for neighbor_id in agent.neighbors.keys():
+                if neighbor_id in self.agents:
+                    G.add_edge(agent_id, neighbor_id)
+        
+        # 设置图形
+        plt.figure(figsize=(12, 8))
+        
+        # 根据agent类型设置颜色
+        color_map = {
+            'linear': 'lightblue',
+            'tree_manager': 'lightgreen', 
+            'tree_worker': 'lightcoral',
+            'holon': 'lightyellow',
+            'p2p_peer': 'lightpink',
+            'hybrid': 'lightgray'
+        }
+        
+        node_colors = [color_map.get(G.nodes[node].get('agent_type', 'linear'), 'white') 
+                      for node in G.nodes()]
+        
+        # 布局
+        pos = nx.spring_layout(G, seed=42)
+        
+        # 绘制网络
+        nx.draw(G, pos, 
+                node_color=node_colors,
+                node_size=1000,
+                with_labels=show_labels,
+                font_size=8,
+                font_weight='bold',
+                edge_color='gray',
+                width=2)
+        
+        plt.title(f"MAS Network Topology ({len(G.nodes())} agents, {len(G.edges())} connections)")
+        
+        # 添加图例
+        handles = [plt.Rectangle((0,0),1,1, color=color, alpha=0.7) 
+                  for color in color_map.values()]
+        labels = list(color_map.keys())
+        plt.legend(handles, labels, loc='upper left', bbox_to_anchor=(1, 1))
+        
+        plt.tight_layout()
+        
+        if save_path:
+            plt.savefig(save_path, dpi=300, bbox_inches='tight')
+        
+        plt.show()
+        
+        # 打印统计信息
+        print(f"\n网络统计:")
+        print(f"总节点数: {len(G.nodes())}")
+        print(f"总边数: {len(G.edges())}")
+        print(f"连通性: {'连通' if nx.is_connected(G) else '不连通'}")
+        
+        if not nx.is_connected(G):
+            components = list(nx.connected_components(G))
+            print(f"连通分量数: {len(components)}")
+            for i, comp in enumerate(components):
+                print(f"  分量 {i+1}: {comp}")
+    
+    def print_validation_report(self):
+        """打印验证报告"""
+        if not self.validation_report:
+            print("请先运行 validate_network()")
+            return
+        
+        report = self.validation_report
+        
+        print("=" * 50)
+        print("MAS 网络验证报告")
+        print("=" * 50)
+        
+        print(f"\n基本信息:")
+        print(f"  总agent数: {report['total_agents']}")
+        
+        print(f"\nAgent详情:")
+        for agent_id, details in report['agent_details'].items():
+            print(f"  {agent_id}: {details['type']} ({details['neighbor_count']} 个邻居)")
+        
+        print(f"\n连通性分析:")
+        conn = report['connectivity_analysis']
+        print(f"  节点数: {conn['total_nodes']}")
+        print(f"  边数: {conn['total_edges']}")
+        print(f"  是否连通: {'是' if conn['is_connected'] else '否'}")
+        print(f"  连通分量数: {conn['number_of_components']}")
+        
+        if report['network_issues']:
+            print(f"\n发现的问题 ({len(report['network_issues'])} 个):")
+            for issue in report['network_issues']:
+                print(f"  - {issue['type']}: {issue['description']}")
+        else:
+            print(f"\n✅ 未发现网络问题")
+
+
+# 使用示例
+def debug_mas_network(agents_list):
+    """调试MAS网络的便捷函数"""
+    validator = NetworkValidator()
+    
+    # 注册所有agents
+    for agent in agents_list:
+        validator.register_agent(agent)
+    
+    # 验证网络
+    report = validator.validate_network()
+    
+    # 打印报告
+    validator.print_validation_report()
+    
+    # 可视化
+    validator.visualize_network()
+    
+    return validator, report
 
 class AgentRole(Enum):
     """Agent role enumeration"""
