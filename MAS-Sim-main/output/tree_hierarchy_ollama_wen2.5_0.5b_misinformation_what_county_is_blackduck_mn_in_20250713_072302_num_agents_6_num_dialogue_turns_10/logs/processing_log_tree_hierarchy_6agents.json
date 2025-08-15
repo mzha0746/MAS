@@ -1,0 +1,9 @@
+{
+  "query": "what county is blackduck mn in",
+  "topology_type": "tree_hierarchy",
+  "num_agents": 6,
+  "attacker_ratio": 0.2,
+  "processing_time": "2025-07-13T07:23:03.991163",
+  "communication_rounds": 10,
+  "total_responses": 50
+}

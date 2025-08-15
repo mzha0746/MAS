@@ -1,0 +1,138 @@
+{
+  "summary": {
+    "total_networks": 1,
+    "total_rounds": 8,
+    "avg_overall_accuracy": 0.0,
+    "avg_attacker_accuracy": 0.0,
+    "avg_normal_accuracy": 0.0,
+    "avg_manipulation_rate": 0.0,
+    "std_overall_accuracy": 0.0,
+    "std_attacker_accuracy": 0.0,
+    "std_normal_accuracy": 0.0,
+    "std_manipulation_rate": 0.0
+  },
+  "round_trends": {
+    "0": {
+      "overall_avg": 0.0,
+      "attacker_avg": 0.0,
+      "normal_avg": 0.0,
+      "overall_std": 0.0,
+      "attacker_std": 0.0,
+      "normal_std": 0.0,
+      "manipulation_avg": 0.0,
+      "manipulation_std": 0.0
+    },
+    "1": {
+      "overall_avg": 0.0,
+      "attacker_avg": 0.0,
+      "normal_avg": 0.0,
+      "overall_std": 0.0,
+      "attacker_std": 0.0,
+      "normal_std": 0.0,
+      "manipulation_avg": 0.0,
+      "manipulation_std": 0.0
+    },
+    "2": {
+      "overall_avg": 0.0,
+      "attacker_avg": 0.0,
+      "normal_avg": 0.0,
+      "overall_std": 0.0,
+      "attacker_std": 0.0,
+      "normal_std": 0.0,
+      "manipulation_avg": 0.0,
+      "manipulation_std": 0.0
+    },
+    "3": {
+      "overall_avg": 0.0,
+      "attacker_avg": 0.0,
+      "normal_avg": 0.0,
+      "overall_std": 0.0,
+      "attacker_std": 0.0,
+      "normal_std": 0.0,
+      "manipulation_avg": 0.0,
+      "manipulation_std": 0.0
+    },
+    "4": {
+      "overall_avg": 0.0,
+      "attacker_avg": 0.0,
+      "normal_avg": 0.0,
+      "overall_std": 0.0,
+      "attacker_std": 0.0,
+      "normal_std": 0.0,
+      "manipulation_avg": 0.0,
+      "manipulation_std": 0.0
+    },
+    "5": {
+      "overall_avg": 0.0,
+      "attacker_avg": 0.0,
+      "normal_avg": 0.0,
+      "overall_std": 0.0,
+      "attacker_std": 0.0,
+      "normal_std": 0.0,
+      "manipulation_avg": 0.0,
+      "manipulation_std": 0.0
+    },
+    "6": {
+      "overall_avg": 0.0,
+      "attacker_avg": 0.0,
+      "normal_avg": 0.0,
+      "overall_std": 0.0,
+      "attacker_std": 0.0,
+      "normal_std": 0.0,
+      "manipulation_avg": 0.0,
+      "manipulation_std": 0.0
+    },
+    "7": {
+      "overall_avg": 0.0,
+      "attacker_avg": 0.0,
+      "normal_avg": 0.0,
+      "overall_std": 0.0,
+      "attacker_std": 0.0,
+      "normal_std": 0.0,
+      "manipulation_avg": 0.0,
+      "manipulation_std": 0.0
+    }
+  },
+  "detailed_stats": {
+    "overall_accuracies": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "attacker_accuracies": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "normal_accuracies": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "manipulation_rates": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ]
+  }
+}
